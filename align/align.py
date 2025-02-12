@@ -100,8 +100,6 @@ class NeedlemanWunsch:
 
     def align(self, seqA: str, seqB: str) -> Tuple[float, str, str]:
         """
-        TODO
-        
         This function performs global sequence alignment of two strings
         using the Needleman-Wunsch Algorithm
         
@@ -126,20 +124,115 @@ class NeedlemanWunsch:
         self._seqA = seqA
         self._seqB = seqB
         
-        # TODO: Initialize matrix private attributes for use in alignment
-        # create matrices for alignment scores, gaps, and backtracing
-        pass
 
+        #step 1- initialize matrices
+
+        #matrix dimensions - add extra row and column for gaps
+        row = len(seqA) + 1 #i
+        col = len(seqB) + 1 #j
         
-        # TODO: Implement global alignment here
-        pass      		
-        		    
+        #initialize matrices with zeros
+        self._align_matrix = np.zeros((row, col))
+        self._gapA_matrix = np.zeros((row, col))
+        self._gapB_matrix = np.zeros((row, col))
+
+        #initialize backtrace matrices with zeros
+        self._back = np.zeros((row, col))
+        self._back_A = np.zeros((row, col))
+        self._back_B = np.zeros((row, col))
+
+        """
+        note: will one-hot encode/dict to store up,left,diagonal directions
+        0 - diagonal
+        1 - up
+        2 - left
+        """
+
+        #step 2 - fill out first row and column with gap penalties
+
+        #fill out first row with gap penalties - aligning seq A with gaps
+        #gap opening penalty, then gap extend penalty for every subsequent cell
+        for j in range(1, col): #move right across cols in first row
+            self._align_matrix[0][j] = self.gap_open + j * self.gap_extend
+            self._gapA_matrix[0][j] = -np.inf #can't align seqA with gap in seqA
+            self._back[0][j] = 2 #left move
+        
+        #fill out first column with gap penalties - aligning seq B with gaps
+        #gap opening penalty, then gap extend penalty for every subsequent cell
+        for i in range(1, row): #move down across rows in first column
+            self._align_matrix[i][0] = self.gap_open + i * self.gap_extend
+            self._gapB_matrix[i][0] = -np.inf #can't align seqB with gap in seqB
+            self._back[i][0] = 1 #up move
+        
+        #step 3 - fill out matrix with alignment scores
+        """
+        notes: NW algorithm
+        diagonal move - from (i-1,j-1) aka align seqA[j-1] with seqB [i-1] , match/mismatch. score = previous score + sub_matrix[seqA[j-1], seqB[i-1]]
+        up move - from (i-1, j), align seqA[i-1] with a gap in seqB, add gap to seqB. score = previous score + gap penalty
+        left move - from (i, j-1),align seqB[j-1] with a gap in seqA, add gap to seqA. score = previous score + gap penalty
+        Take max of the three scores
+        """
+        #calculate alignment scores for each cell in the matrix
+        print("here")
+        print ("seqA: ", seqA)
+        print ("seqB: ", seqB)
+        print ("row: ", row)
+        print ("col: ", col)
+
+        for i in range(1, row):
+            for j in range(1, col):
+                #print("i: ", i)
+                #sprint("j: ", j)
+                #trouble shooting
+               # print ("seqA: ", seqA)
+               # print ("seqB: ", seqB)
+
+                #calculate score for each possible move
+                #diagonal move - match or mismatch score
+                diagonal_score = self._align_matrix[i-1][j-1] + self.sub_dict[(seqA[j-1], seqB[i-1])] #look up score in substitution matrix
+                #diagonal_score = self._align_matrix[i-1][j-1] + self.sub_dict[(seqA[j-1], seqB[i-1])]
+                #up move - adding gap to seqB
+                up_score = max(self._align_matrix[i-1][j] + self.gap_open, self._gapB_matrix[i-1][j] + self.gap_extend)
+                #takes the max of two possible scores
+                #if a gap is already open, then previous score + gap extend penalty > current gap penalty + extend gap penalty
+                #if a gap was not yet open, then previous score + gap open penalty > current gap penalty (-inf) + extend gap penalty
+                #take the max of the two scores = checking if gap is already open or not
+
+                #left move - adding gap to seqA
+                left_score = max(self._align_matrix[i][j-1]+ self.gap_open, self._gapA_matrix[i][j-1] + self.gap_extend)
+                #same logic as above
+
+                #take max of the three scores
+                score = max(diagonal_score, up_score, left_score)
+
+                #update alignment matrix with score
+                self._align_matrix[i][j] = score
+
+                #update backtrace matrix with direction taken to get max score - (optimize with dictionary?)
+                #update gap matrices with gap penalties
+                if score == diagonal_score:
+                    self._back[i][j] = 0 #diagonal move
+                elif score == up_score:
+                    self._back[i][j] = 1   #up move
+                    #add gap to seqB - store penalty in gap matrix 
+                    #open or extend gap
+                    if self._gapB_matrix[i-1][j] == -np.inf: # no gap yet
+                        self._gapB_matrix[i][j] = self.gap_open #add open gap penalty
+                    else: #gap open, add extend gap penalty
+                        self._gapB_matrix[i][j] = self.gap_extend
+                else:
+                    self._back[i][j] = 2   #left move
+                    #add gap to seqA - store penalty in gap matrix
+                    #open or extend gap
+                    if self._gapA_matrix[i][j-1] == -np.inf: # no gap yet
+                        self._gapA_matrix[i][j] = self.gap_open #add open gap penalty
+                    else: #gap open, add extend gap penalty
+                        self._gapA_matrix[i][j] = self.gap_extend
+  			    
         return self._backtrace()
 
     def _backtrace(self) -> Tuple[float, str, str]:
         """
-        TODO
-        
         This function traces back through the back matrix created with the
         align function in order to return the final alignment score and strings.
         
@@ -150,8 +243,41 @@ class NeedlemanWunsch:
          	(alignment score, seqA alignment, seqB alignment) : Tuple[float, str, str]
          		the score and corresponding strings for the alignment of seqA and seqB
         """
-        pass
 
+        #start at bottom right corner of matrix
+        i = len(self._seqA)
+        j = len(self._seqB)
+
+        #initialize aligned sequences
+        seqA_align = ""
+        seqB_align = ""
+
+        #alignment score
+        self.alignment_score = self._align_matrix[i][j]
+
+        #backtrace through matrix
+        while i > 0 or j > 0:
+            #which move was taken to get to current cell?
+            move = self._back[i][j]
+            if move == 0: #diagonal move
+                seqA_align = self._seqA[j-1] + seqA_align #add last res of seqA to alignment #optimize with string builder? or append to list and join at end, then reverse?
+                seqB_align = self._seqB[i-1] + seqB_align #add last res of seqB to alignment
+                #move diagonally
+                i -= 1
+                j -= 1
+            elif move == 1: #up move - #add gap to seqB
+                seqA_align = self._seqA[j-1] + seqA_align #add last res of seqA to alignment
+                seqB_align = "-" + seqB_align #add gap to seqB
+                #move up
+                i -= 1
+            else: #left move - add gap to seqA
+                seqA_align = "-" + seqA_align #add gap to seqA
+                seqB_align = self._seqB[i-1] + seqB_align #add last res of seqB to alignment
+                #move left
+                j -= 1
+
+        #make sure strings are built correctly
+            
         return (self.alignment_score, self.seqA_align, self.seqB_align)
 
 
