@@ -28,29 +28,36 @@ def main():
         mm_seq:None,
         br_seq:None,
         tt_seq:None
-
+        }
+    
+    seq_species_dict = {
+        gg_seq:"Gallus gallus",
+        mm_seq:"Mus musculus",
+        br_seq:"Balaeniceps rex",
+        tt_seq:"Tursiops truncatus"
     }
-
+    
+    """
+    test_seq = "AGT"
+    test_seq_b = "ALGT"
+    
+    score, hs_seq_align, seq_B_align = nm.align(test_seq, test_seq_b)
+    print("Alignment score: ", score)
+    print("hs_seq_align: ", hs_seq_align)
+    print("seq_B_align: ", seq_B_align)
+    """
+    
     for seq in sequences_to_align:
-        #print seq
         #align seq to hs_seq
-        score, hs_seq_align, seq_B_align = nm.align(hs_seq, seq)
+        score, hs_seq_align, seq_b_align = nm.align(hs_seq, seq)
         seq_score_dict[seq] = score
 
-    #print in order of highest score to lowest score
+
+    #print species in order of most similar to human BRD
     sorted_seq_score_dict = dict(sorted(seq_score_dict.items(), key=lambda item: item[1], reverse=True))
     for key in sorted_seq_score_dict.keys():
-        print(key)
-        print("Alignment score: ", sorted_seq_score_dict[key])
+        print(f"Species: ", seq_species_dict[key], "; Alignment score: ", sorted_seq_score_dict[key])
 
-    
-
-    pass
-
-    # TODO print all of the alignment score between each species BRD2 and human BRD2
-    # using gap opening penalty of -10 and a gap extension penalty of -1 and BLOSUM62 matrix
-    pass
-    
 
 if __name__ == "__main__":
     main()

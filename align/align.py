@@ -124,12 +124,11 @@ class NeedlemanWunsch:
         self._seqA = seqA
         self._seqB = seqB
         
-
         #step 1- initialize matrices
 
         #matrix dimensions - add extra row and column for gaps
-        row = len(seqA) + 1 #i
-        col = len(seqB) + 1 #j
+        row = len(seqB) + 1 #i seq B is vertical 
+        col = len(seqA) + 1 #j seq A is horizontal
         
         #initialize matrices with zeros
         self._align_matrix = np.zeros((row, col))
@@ -152,6 +151,7 @@ class NeedlemanWunsch:
 
         #fill out first row with gap penalties - aligning seq A with gaps
         #gap opening penalty, then gap extend penalty for every subsequent cell
+
         for j in range(1, col): #move right across cols in first row
             self._align_matrix[0][j] = self.gap_open + j * self.gap_extend
             self._gapA_matrix[0][j] = -np.inf #can't align seqA with gap in seqA
@@ -173,24 +173,14 @@ class NeedlemanWunsch:
         Take max of the three scores
         """
         #calculate alignment scores for each cell in the matrix
-        print("here")
-        print ("seqA: ", seqA)
-        print ("seqB: ", seqB)
-        print ("row: ", row)
-        print ("col: ", col)
-
-        for i in range(1, row):
-            for j in range(1, col):
-                #print("i: ", i)
-                #sprint("j: ", j)
-                #trouble shooting
-               # print ("seqA: ", seqA)
-               # print ("seqB: ", seqB)
-
+        for i in range(1, row): #skip first row - gap penalties already filled in
+            for j in range(1, col): #skip first col - gap penalties already filled in
                 #calculate score for each possible move
+
                 #diagonal move - match or mismatch score
                 diagonal_score = self._align_matrix[i-1][j-1] + self.sub_dict[(seqA[j-1], seqB[i-1])] #look up score in substitution matrix
-                #diagonal_score = self._align_matrix[i-1][j-1] + self.sub_dict[(seqA[j-1], seqB[i-1])]
+                
+          
                 #up move - adding gap to seqB
                 up_score = max(self._align_matrix[i-1][j] + self.gap_open, self._gapB_matrix[i-1][j] + self.gap_extend)
                 #takes the max of two possible scores
@@ -207,6 +197,7 @@ class NeedlemanWunsch:
 
                 #update alignment matrix with score
                 self._align_matrix[i][j] = score
+                
 
                 #update backtrace matrix with direction taken to get max score - (optimize with dictionary?)
                 #update gap matrices with gap penalties
@@ -228,7 +219,7 @@ class NeedlemanWunsch:
                         self._gapA_matrix[i][j] = self.gap_open #add open gap penalty
                     else: #gap open, add extend gap penalty
                         self._gapA_matrix[i][j] = self.gap_extend
-  			    
+  
         return self._backtrace()
 
     def _backtrace(self) -> Tuple[float, str, str]:
@@ -245,39 +236,50 @@ class NeedlemanWunsch:
         """
 
         #start at bottom right corner of matrix
-        i = len(self._seqA)
-        j = len(self._seqB)
-
+        i = len(self._seqB)
+        j = len(self._seqA)
+        
         #initialize aligned sequences
-        seqA_align = ""
-        seqB_align = ""
+        seqA_align_list = []
+        seqB_align_list = []
 
         #alignment score
-        self.alignment_score = self._align_matrix[i][j]
+        self.alignment_score = self._align_matrix[i][j] 
 
         #backtrace through matrix
         while i > 0 or j > 0:
             #which move was taken to get to current cell?
             move = self._back[i][j]
             if move == 0: #diagonal move
-                seqA_align = self._seqA[j-1] + seqA_align #add last res of seqA to alignment #optimize with string builder? or append to list and join at end, then reverse?
-                seqB_align = self._seqB[i-1] + seqB_align #add last res of seqB to alignment
+                seqA_align_list.append(self._seqA[j-1]) #add last res of seqA to alignment
+                seqB_align_list.append(self._seqB[i-1]) #add last res of seqB to alignment
+
                 #move diagonally
                 i -= 1
                 j -= 1
+
             elif move == 1: #up move - #add gap to seqB
-                seqA_align = self._seqA[j-1] + seqA_align #add last res of seqA to alignment
-                seqB_align = "-" + seqB_align #add gap to seqB
+                seqA_align_list.append(self._seqA[j-1]) #add last res of seqA to alignment
+                seqB_align_list.append("-") #add gap to seqB
+
                 #move up
                 i -= 1
+
             else: #left move - add gap to seqA
-                seqA_align = "-" + seqA_align #add gap to seqA
-                seqB_align = self._seqB[i-1] + seqB_align #add last res of seqB to alignment
+                seqA_align_list.append("-") #add gap to seqA
+                seqB_align_list.append(self._seqB[i-1]) #add last res of seqB to alignment
+
                 #move left
                 j -= 1
 
-        #make sure strings are built correctly
-            
+        #reverse lists
+        seqA_align_list.reverse()
+        seqB_align_list.reverse()
+
+        #convert list to string - needed?
+        self.seqA_align = "".join(seqA_align_list)
+        self.seqB_align = "".join(seqB_align_list)
+
         return (self.alignment_score, self.seqA_align, self.seqB_align)
 
 
