@@ -19,10 +19,17 @@ def test_nw_alignment():
     score, align1, align2 = nw.align(seq1, seq2)
 
     #assert that alignment matrix is correct
-    expected_alignment_mat = [[  0., -10., -11., -12.], #double check this is correct?
-                                [-10.,   5.,  -5.,  -6.],
-                                [-11.,  -5.,   4.,   2.],
-                                [-12.,  -6.,  10.,   9.]]
+    #expected_alignment_mat = [[  0., -10., -11., -12.], #double check this is correct?
+                                #[-10.,   5.,  -5.,  -6.],
+                                #[-11.,  -5.,   4.,   2.],
+                                #[-12.,  -6.,  10.,   9.]]
+    #testing
+    expected_alignment_mat = [
+    [  0., -10., -11., -12.],  
+    [-10.,   5.,  -5.,  -6.],  
+    [-11.,  -5.,   4.,   2.],  
+    [-12.,  -6.,  10.,   9.],  
+    [-13.,  -7.,   1.,  15.]  ]
                                 
     alignment_mat = nw._align_matrix
     assert np.array_equal(alignment_mat, expected_alignment_mat)
@@ -32,17 +39,24 @@ def test_nw_alignment():
     gapB_mat = nw.gapB_matrix
 
     #assert that gapA matrix is correct
-    expected_gapA_mat = [[  0., -10., -20., -30.],
-                        [-10., -10., -11., -21.],
-                        [-20.,  -5., -15., -16.],
-                        [-30.,  -6.,  -5., -15.]]
+    #testing
+    expected_gapA_mat = [
+    [  0., -10., -11., -12.],  
+    [-10., -np.inf, -20., -21.],  
+    [-11., -np.inf, -15., -16.],  
+    [-12., -np.inf, -16., -17.],  
+    [-13., -np.inf, -17., -18.]]
+    
     assert np.array_equal(gapA_mat, expected_gapA_mat)
 
     #assert that gapB matrix is correct
-    expected_gapB_mat = [[  0., -10., -20., -30.],
-                        [-10.,  -5., -15., -16.],
-                        [-20., -10.,  -5., -15.],
-                        [-30., -11.,  -6.,  -5.]]
+    #testing
+    expected_gapB_mat = [
+    [  0., -10., -11., -12.],  
+    [-10., -np.inf, -np.inf, -np.inf],  
+    [-11., -20., -15., -16.],  
+    [-12., -21., -16., -17.],  
+    [-13., -22., -17., -18.] ]
     assert np.array_equal(gapB_mat, expected_gapB_mat)
 
 
@@ -66,11 +80,20 @@ def test_nw_backtrace():
 
     #assert that backtrace matrix is correct
     backtrace_mat = nw._back
-    #placeholder expected backtrace matrix
-    expected_backtrace_mat = [[0, 0, 0, 0],
-                                [0, 1, 1, 1],
-                                [0, 1, 1, 1],
-                                [0, 1, 1, 1]]
+    #testing
+    expected_backtrace_mat = [
+    [0, 2, 2, 2, 2, 2, 2, 2],
+    [1, 0, 2, 2, 2, 2, 2, 2],
+    [1, 1, 2, 2, 2, 2, 2, 2],
+    [1, 1, 1, 2, 2, 2, 2, 2],
+    [1, 1, 1, 1, 2, 2, 0, 2],
+    [1, 1, 0, 1, 2, 2, 2, 2],
+    [1, 1, 1, 0, 2, 2, 2, 2],
+    [1, 1, 1, 1, 0, 2, 2, 2],
+    [1, 1, 1, 1, 1, 0, 2, 2],
+    [1, 1, 1, 1, 1, 0, 2, 2],
+    [1, 1, 1, 1, 1, 1, 2, 0]
+]
     assert np.array_equal(backtrace_mat, expected_backtrace_mat)
 
     #assert alignment score is correct
