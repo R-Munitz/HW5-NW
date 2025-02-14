@@ -24,7 +24,7 @@ def test_nw_alignment():
                                 [-11.,  -5.,   4.,   2.],
                                 [-12.,  -6.,  10.,   9.]]
                                 
-    alignment_mat = nw.alignment_matrix
+    alignment_mat = nw._align_matrix
     assert np.array_equal(alignment_mat, expected_alignment_mat)
 
     #note, expected matrices are just placeholders, need to check if they are correct
@@ -65,7 +65,7 @@ def test_nw_backtrace():
     score, align3, align4 = nw.align(seq3, seq4)
 
     #assert that backtrace matrix is correct
-    backtrace_mat = nw.backtrace_matrix
+    backtrace_mat = nw._back
     #placeholder expected backtrace matrix
     expected_backtrace_mat = [[0, 0, 0, 0],
                                 [0, 1, 1, 1],
