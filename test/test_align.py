@@ -32,7 +32,7 @@ def test_nw_alignment():
     [-13.,  -7.,   1.,  15.]  ]
                                 
     alignment_mat = nw._align_matrix
-    assert np.array_equal(alignment_mat, expected_alignment_mat)
+    assert np.array_equal(alignment_mat, np.array(expected_alignment_mat))
 
     #note, expected matrices are just placeholders, need to check if they are correct
     gapA_mat = nw.gapA_matrix
@@ -47,7 +47,7 @@ def test_nw_alignment():
     [-12., -np.inf, -16., -17.],  
     [-13., -np.inf, -17., -18.]]
     
-    assert np.array_equal(gapA_mat, expected_gapA_mat)
+    assert np.array_equal(gapA_mat, np.array(expected_gapA_mat))
 
     #assert that gapB matrix is correct
     #testing
@@ -57,7 +57,7 @@ def test_nw_alignment():
     [-11., -20., -15., -16.],  
     [-12., -21., -16., -17.],  
     [-13., -22., -17., -18.] ]
-    assert np.array_equal(gapB_mat, expected_gapB_mat)
+    assert np.array_equal(gapB_mat, np.array(expected_gapB_mat))
 
 
     pass
@@ -94,7 +94,7 @@ def test_nw_backtrace():
     [1, 1, 1, 1, 1, 0, 2, 2],
     [1, 1, 1, 1, 1, 1, 2, 0]
 ]
-    assert np.array_equal(backtrace_mat, expected_backtrace_mat)
+    assert np.array_equal(backtrace_mat, np.array(expected_backtrace_mat))
 
     #assert alignment score is correct
     assert score == 17
