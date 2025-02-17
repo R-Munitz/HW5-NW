@@ -152,6 +152,8 @@ class NeedlemanWunsch:
         self._align_matrix[0][0] = 0
         self._gapA_matrix[0][0] = -np.inf
         self._gapB_matrix[0][0] = -np.inf
+      
+
 
 
         # fill out first row with gap penalties

@@ -59,5 +59,35 @@ def main():
         print(f"Species: ", seq_species_dict[key], "; Alignment score: ", sorted_seq_score_dict[key])
 
 
+def troubleshooting():
+    seq1, _ = read_fasta("./data/test_seq1.fa")
+    seq2, _ = read_fasta("./data/test_seq2.fa")
+
+    nw = NeedlemanWunsch(sub_matrix_file="substitution_matrices/BLOSUM62.mat", gap_open=-10, gap_extend=-1)
+
+    score, align1, align2 = nw.align(seq1, seq2)
+
+    print("alignment matrix: ", nw._align_matrix)
+    print("gapA matrix: ", nw._gapA_matrix)
+    print("gapB matrix: ", nw._gapB_matrix)
+    
+     
+
+
+    seq3, _ = read_fasta("./data/test_seq3.fa")
+    seq4, _ = read_fasta("./data/test_seq4.fa")
+
+    nw = NeedlemanWunsch(sub_matrix_file="substitution_matrices/BLOSUM62.mat", gap_open=-10, gap_extend=-1)
+
+    score, align3, align4 = nw.align(seq3, seq4)
+
+    print("score: ", score)
+    print("align3: ", align3)
+    print("align4: ", align4)
+
+    print("nw backtrace: ", nw._back)
+
+
 if __name__ == "__main__":
     main()
+    troubleshooting()
